@@ -16,23 +16,24 @@
 (defun diff-apply-patch ()
   "Apply all the hunks of the diff found in the current buffer."
   (goto-char (point-min))
-  (diff-hunk-next) ;; skip over the header
+  (diff-hunk-next) ;; skip over the header of the first file
   (while (not (eobp))
     (diff-apply-hunk)))
 
-(defvar vc-partial-commit-file ()
-  "Contains the working file (with only those changes we want to
-commit) and its backup (with all the local changes).")
+(defvar vc-partial-commit-files ()
+  "Alist of working files to be commited with the backup
+file (with all the modifications) as the key.")
 
 (defun vc-partial-commit ()
-  "Commit the changes in the diff (and only those ones)."
+  "Commit the changes in the diff (and only those ones). Must be
+called from the *vc-diff* buffer."
   (interactive)
   ;; The current buffer is the diff (as obtained from C-x v = on a
-  ;; single file).
-  ;; XXX: update to be able to handle several files.
+  ;; single file or on a selection of files in *vc-dir*).
   ;;
-  ;; To make a partial commit:
-  ;; 1. Rename the file concerned with the diff to filename.mine.XXX
+  ;; To make a partial commit, when "git add --patch" or "bzr shelf"
+  ;; is not available:
+  ;; 1. Copy the file concerned with the diff to filename.mine.XXX
   ;; 2. Revert the file
   ;; 3. Apply the diff to the file, save to disk: the file now contains only
   ;;    the changes we wanted to keep
@@ -40,30 +41,51 @@ commit) and its backup (with all the local changes).")
   ;; 5. Rename filename.mine.XXX back to filename so we can recover
   ;;    the changes not checked in. This needs to be done in
   ;;    vc-checkin-hook.
-  (let* ((diff-buf (current-buffer))
-	 (file-buf (save-excursion (diff-goto-source) (current-buffer)))
-	 (file (buffer-file-name file-buf))
-	 (backup (concat file (make-temp-name ".mine."))))
-    (rename-file file backup)
-    (message "backup file: %s" backup)
-    (vc-revert-file file)
+  (if vc-partial-commit-files
+      (error "vc-partial-commit-files not empty: current commit in progress?"))
+  (let* ((diff-buf (current-buffer)) files file backup)
+    ;; Get the list of files to commit
+    (goto-char (point-min))
+    (while (re-search-forward diff-file-header-re nil t)
+      (save-excursion
+	(diff-goto-source)
+	(setq file (buffer-file-name (current-buffer)))
+	(setq vc-partial-commit-files
+	      (cons (cons file
+			  (concat file (make-temp-name ".mine.")))
+		    vc-partial-commit-files))))
+    (setq files (mapcar 'car vc-partial-commit-files))
+
+    ;; 1. and 2.: rename the files (with all the modifications) to a
+    ;; temporary backup, then revert the file.
+    (dolist (elem vc-partial-commit-files)
+      (setq file (car elem)
+	    backup (cdr elem))
+      (copy-file file backup)
+      (vc-revert-file file))
+    ;; 3. apply only those changes we kept in the VC-diff buffer
     (diff-apply-patch)
-    (switch-to-buffer file-buf)
-    (save-buffer)
-    (vc-checkin (list file) (vc-backend file))
-    (setq vc-partial-commit-file (list file backup))
+    (save-some-buffers t (lambda () (member (buffer-file-name) files)))
+    ;; 4. commit the changes we kept
+    (vc-checkin files (vc-backend (car files)))
+    ;; 5. hook a function to restore all the modifications to our
+    ;;    working files from the backup, and allow the user to enter
+    ;;    its changelog
     (add-hook 'vc-checkin-hook 'vc-partial-commit-restore-working-file)
     (switch-to-buffer "*VC-log*")
     (display-buffer diff-buf)))
 
 (defun vc-partial-commit-restore-working-file ()
   "Used as a hook to restore the working file (the one that
-contains all of our changes) over the temp file containing only
-the changes we wanted to commit."
-  (let ((file (nth 0 vc-partial-commit-file))
-	(backup (nth 1 vc-partial-commit-file)))
-    (rename-file backup file t)
-    (switch-to-buffer (find-buffer-visiting file))
-    (revert-buffer nil t)
-    (setq vc-partial-commit-file nil)
-    (remove-hook 'vc-checkin-hook 'vc-partial-commit-restore-working-file)))
+contains all of our changes) over the temp file (containing only
+the changes we just committed)."
+  ;; 5. Rename filename.mine.XXX back to filename so we can recover
+  ;;    the changes not checked in.
+  (dolist (elem vc-partial-commit-files)
+    (let ((file (car elem)) (backup (cdr elem)))
+      (rename-file backup file t)
+      (switch-to-buffer (find-buffer-visiting file))
+      (revert-buffer nil t)))
+  (setq vc-partial-commit-files nil)
+  (remove-hook 'vc-checkin-hook 'vc-partial-commit-restore-working-file))
+
