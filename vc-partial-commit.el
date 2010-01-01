@@ -78,6 +78,18 @@ called from the *vc-diff* buffer."
     (switch-to-buffer "*VC-log*")
     (display-buffer diff-buf)))
 
+(defun vc-partial-commit-or-diff ()
+  "If we are looking at a diff, then commit this diff; otherwise, ask for 
+a diff.
+
+XXX: this should really be integrated with vc-next-action."
+  (interactive)
+  (if (eq major-mode 'diff-mode)
+      (vc-partial-commit)
+    (vc-diff nil)))
+
+(define-key vc-prefix-map "p" 'vc-partial-commit-or-diff)
+
 (defun vc-partial-commit-restore-working-file ()
   "Used as a hook to restore the working file (the one that
 contains all of our changes) over the temp file (containing only
