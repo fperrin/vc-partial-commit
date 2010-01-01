@@ -21,8 +21,9 @@
     (diff-apply-hunk)))
 
 (defvar vc-partial-commit-files ()
-  "Alist of working files to be commited with the backup
-file (with all the modifications) as the key.")
+  "Alist of working files to be commited with the working file as
+the key and the backup file (with all the modifications) as the
+value.")
 
 (defun vc-partial-commit ()
   "Commit the changes in the diff (and only those ones). Must be
@@ -43,6 +44,8 @@ called from the *vc-diff* buffer."
   ;;    vc-checkin-hook.
   (if vc-partial-commit-files
       (error "vc-partial-commit-files not empty: current commit in progress?"))
+  (if (not (eq major-mode 'diff-mode))
+      (error "vc-partial-commit-files should be called from the buffer containing the diff to commit"))
   (let* ((diff-buf (current-buffer)) files file backup)
     ;; Get the list of files to commit
     (goto-char (point-min))
