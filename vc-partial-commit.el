@@ -1,4 +1,4 @@
-;;; vc-partialcommit.el -- commit only some changes from a diff
+;;; vc-partial-commit.el -- commit only some changes from a diff
 
 ;; The idea is that after some happy hacking on a file, there are
 ;; several unrelated changes in our working copy. For instance, while
@@ -104,3 +104,6 @@ the changes we just committed)."
   (setq vc-partial-commit-files nil)
   (remove-hook 'vc-checkin-hook 'vc-partial-commit-restore-working-file))
 
+(provide 'vc-partial-commit)
+
+;;; vc-partial-commit.el ends here
