@@ -1,0 +1,42 @@
+#+TITLE: vc-partial-commit -- commit only some changes from a diff
+
+* Description
+
+The idea is that after some happy hacking on a file, there are several
+unrelated changes in our working copy. For instance, while working on
+feature A, we hit bug B, so we corrected it before continuing to work on A.
+But, we want to commit "atomic changes" (e.g. only the correction to B, and
+then the new feature A), so we want to commit only part of thoses changes
+(as in "=git add --patch="). So, we ask for the diff between our working
+copy and the last updated file, we keep only those hunks we want to keep
+(in =diff-mode=: /k/ to delete the hunks we don't want to commit now, for
+instance), and commit that. And then we can make a second commit with the
+rest of the changes.
+
+Since this mode uses only Emacs' high-level VC commands, this feature is
+available to all VCS supported by Emacs.
+
+* Usage
+
+When you are about to commit changes, press =C-x v v= (from a ~*vc-dir*~
+buffer after marking some files, or directly from a file). This will bring
+up a ~*vc-diff*~ buffer in =diff-mode=. Edit the diff (/k/ to delete a
+hunk, =C-c C-s= to split a hunk, etc.). When satisfied, press =C-x v p=,
+enter a comment in the buffer, and =C-c C-c= to commit the buffer.
+
+You can actually use =C-x v p= from any buffer in =diff-mode=, as long as
+the filenames in the patch are relative to the patch location.
+
+When not visiting a buffer in =diff-mode=, =C-x v p= will invoke
+=(vc-diff nil)=.
+
+* Bugs
+
+There is no checking that the patch you created while in =diff-mode= will
+apply. If it doesn't, your working copy is going to be left in some
+intermediate state. In order to recover from that situation, run
+=vc-partial-commit-restore-working-file=. Maybe such situations should be
+detected and handled from =vc-partial-commit= itself.
+
+Maybe we should register =vc-partial-commit= as a potential action in
+=vc-next-action=.
