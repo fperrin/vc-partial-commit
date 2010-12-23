@@ -1,26 +1,27 @@
-#+TITLE: vc-partial-commit -- commit only some changes from a diff
+vc-partial-commit -- faire un commit partiel
 
-* Description
+* In English
+
+** Description
 
 The idea is that after some happy hacking on a file, there are several
 unrelated changes in our working copy. For instance, while working on
-feature A, we hit bug B, so we corrected it before continuing to work on A.
-But, we want to commit "atomic changes" (e.g. only the correction to B, and
-then the new feature A), so we want to commit only part of thoses changes
-(as in "=git add --patch="). So, we ask for the diff between our working
-copy and the last updated file, we keep only those hunks we want to keep
-(in =diff-mode=: /k/ to delete the hunks we don't want to commit now, for
-instance), and commit that. And then we can make a second commit with the
+feature A, we hit bug B, so we corrected it before continuing to work on
+A. But, we want to commit "atomic changes" (e.g. only the correction to
+B, and then the new feature A), so we want to commit only part of thoses
+changes (as in "=git add --patch="). So, we ask for the diff between our
+working copy and the last updated file, we keep only those hunks we want
+to keep, and commit that. And then we can make a second commit with the
 rest of the changes.
 
-Since this mode uses only Emacs' high-level VC commands, this feature is
+Since this package uses only Emacs' high-level VC commands, this feature is
 available to all VCS supported by Emacs.
 
-* Usage
+** Usage
 
-When you are about to commit changes, press =C-x v v= (from a ~*vc-dir*~
+When you are about to commit changes, press ~C-x v =~ (from a ~*vc-dir*~
 buffer after marking some files, or directly from a file). This will bring
-up a ~*vc-diff*~ buffer in =diff-mode=. Edit the diff (/k/ to delete a
+up a ~*vc-diff*~ buffer in =diff-mode=. Edit the diff (=k= to delete a
 hunk, =C-c C-s= to split a hunk, etc.). When satisfied, press =C-x v p=,
 enter a comment in the buffer, and =C-c C-c= to commit the buffer.
 
@@ -30,7 +31,13 @@ the filenames in the patch are relative to the patch location.
 When not visiting a buffer in =diff-mode=, =C-x v p= will invoke
 =(vc-diff nil)=.
 
-* Bugs
+** Installation
+
+The code is [[http://svn.fperrin.net/vc-partial-commit/][kept in my SVN repository]], with [[http://code.fperrin.net/vc-partial-commit.git][a git mirror]] available.
+Retreive the =.el= file and put it somewhere in your [[http://www.emacswiki.org/cgi-bin/wiki?LoadPath][=load-path=]]. Add
+=(require 'vc-partial-commit)= to your =.emacs=.
+
+** Bugs
 
 There is no checking that the patch you created while in =diff-mode= will
 apply. If it doesn't, your working copy is going to be left in some
@@ -40,3 +47,54 @@ detected and handled from =vc-partial-commit= itself.
 
 Maybe we should register =vc-partial-commit= as a potential action in
 =vc-next-action=.
+
+* En Français
+
+** Description
+
+Après une séance de code, il peut y avoir plusieurs modifications qui
+n'ont pas de rapport entre elles qui sont mélangées dans la copie locale.
+Typiquement, pendant que l'on travaille sur la fonctionnalité A, on tombe
+sur le bogue B, que l'on corrige. On voudrait ne committer que la
+correction de B, indépendemment de A, un peu à là =git add --patch=. On
+demande le diff entre notre copie de travail et le dernier commit, on ne
+garde que les morceaux qui nous intéressent, on committe cela. Ensuite,
+on peut faire un deuxième commit avec le reste des modifications.
+
+Ce paquet n'utilisant que les commandes de VC d'Emacs, cette
+fonctionnalité est disponible dans tous les VCS gérés par Emacs.
+
+** Utilisation
+
+Utilisez ~C-x v =~ (depuis un tampon ~*vc-dir*~ après avoir sélectionné
+certains fichiers, ou directement depuis un fichier). Ceci va créer un
+tampon ~*vc-diff*~ en mode =diff-mode=. Éditez le diff (=k= pour
+supprimer un /hunk/, =C-c C-s= pour diviser un /hunk/ en deux morceaux,
+etc.). Lorsque le patch à committer est prêt, utilisez =C-x v p=, entrez
+un commentaire dans le tampon ~*vc-log*~, et =C-c C-c= pour valider.
+
+En fait, on peut utiliser =C-x v p= depuis tout tampon qui est en mode
+=diff-mode=, à condition que les chemins dans le diff soient resolvables
+depuis le dossier contenant le patch.
+
+Lorsqu'on visite un tampon qui n'est pas en mode =diff-mode=, =C-x v p=
+appellera =(vc-diff nil)=.
+
+** Installation
+
+La version initiale est [[http://svn.fperrin.net/vc-partial-commit/][gardée dans SVN]] ; il y a un [[http://code.fperrin.net/vc-partial-commit.git][miroir git]]. Récupérer
+le fichier =.el= et le mettre quelque part dans [[http://www.emacswiki.org/cgi-bin/wiki?LoadPath][=load-path=]]. Ajouter
+=(require 'vc-partial-commit))= dans votre =.emacs=.
+
+** Bogues
+
+Il n'y a pas de vérification que le patch créé s'applique correctement.
+Si ce n'est pas le cas, la copie de travail va se retrouver dans un état
+intermédiaire. Cela m'est déjà arrivé à cause de fichiers mélangeant les
+fins de ligne. Pour retomber sur ses pieds, utilisez
+=vc-partial-commit-restore-working-file=. De telles situations devraient
+probablement être détectées et gérées depuis =vc-partial-commit=.
+
+On devrait peut-être considérer =vc-partial-commit= comme une action
+potentielle de =vc-next-action=.
+
