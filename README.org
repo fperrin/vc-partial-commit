@@ -33,7 +33,7 @@ When not visiting a buffer in =diff-mode=, =C-x v p= will invoke
 
 ** Installation
 
-The code is [[http://svn.fperrin.net/vc-partial-commit/][kept in my SVN repository]], with [[http://code.fperrin.net/vc-partial-commit.git][a git mirror]] available.
+The code is [[http://svn.fperrin.net/vc-partial-commit/][kept in my SVN repository]], with [[http://gitweb.fperrin.net/?p=vc-partial-commit.git][a git mirror]] available.
 Retreive the =.el= file and put it somewhere in your [[http://www.emacswiki.org/cgi-bin/wiki?LoadPath][=load-path=]]. Add
 =(require 'vc-partial-commit)= to your =.emacs=.
 
@@ -82,7 +82,7 @@ appellera =(vc-diff nil)=.
 
 ** Installation
 
-La version initiale est [[http://svn.fperrin.net/vc-partial-commit/][gardée dans SVN]] ; il y a un [[http://code.fperrin.net/vc-partial-commit.git][miroir git]]. Récupérer
+La version initiale est [[http://svn.fperrin.net/vc-partial-commit/][gardée dans SVN]] ; il y a un [[http://gitweb.fperrin.net/?p=vc-partial-commit.git][miroir git]]. Récupérer
 le fichier =.el= et le mettre quelque part dans [[http://www.emacswiki.org/cgi-bin/wiki?LoadPath][=load-path=]]. Ajouter
 =(require 'vc-partial-commit))= dans votre =.emacs=.
 
