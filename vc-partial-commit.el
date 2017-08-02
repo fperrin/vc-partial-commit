@@ -1,5 +1,7 @@
 ;;; vc-partial-commit.el -- commit only some changes from a diff
 
+;; License: GNU GPL version 3, or (at your option) any later version
+
 ;; The idea is that after some happy hacking on a file, there are
 ;; several unrelated changes in our working copy. For instance, while
 ;; working on feature A, we hit bug B, so we corrected it before
